@@ -1,0 +1,169 @@
+// Mock animal data for testing and development
+export const mockAnimals = [
+  // Common (10-20 points)
+  {
+    name: 'House Sparrow',
+    scientificName: 'Passer domesticus',
+    rarityScore: 15,
+    rarityTier: 'Common',
+    points: 15,
+    funFact: 'House sparrows can recognize over 10 different calls to communicate with each other.',
+  },
+  {
+    name: 'Pigeon',
+    scientificName: 'Columba livia',
+    rarityScore: 12,
+    rarityTier: 'Common',
+    points: 12,
+    funFact: 'Pigeons can navigate using the Earth\'s magnetic field and can return home from up to 1,300 km away.',
+  },
+  {
+    name: 'Common Frog',
+    scientificName: 'Rana temporaria',
+    rarityScore: 18,
+    rarityTier: 'Common',
+    points: 18,
+    funFact: 'Frogs can breathe through their skin, absorbing oxygen and water directly from their environment.',
+  },
+  {
+    name: 'European Rabbit',
+    scientificName: 'Oryctolagus cuniculus',
+    rarityScore: 16,
+    rarityTier: 'Common',
+    points: 16,
+    funFact: 'Rabbits can jump up to 3 meters high and can see nearly 360 degrees around them.',
+  },
+
+  // Uncommon (21-40 points)
+  {
+    name: 'Red Fox',
+    scientificName: 'Vulpes vulpes',
+    rarityScore: 32,
+    rarityTier: 'Uncommon',
+    points: 32,
+    funFact: 'Foxes use Earth\'s magnetic field to hunt rodents beneath the snow with incredible precision.',
+  },
+  {
+    name: 'Hedgehog',
+    scientificName: 'Erinaceus europaeus',
+    rarityScore: 28,
+    rarityTier: 'Uncommon',
+    points: 28,
+    funFact: 'Hedgehogs have over 5,000 spines on their bodies that are replaced every year.',
+  },
+  {
+    name: 'Magpie',
+    scientificName: 'Pica pica',
+    rarityScore: 25,
+    rarityTier: 'Uncommon',
+    points: 25,
+    funFact: 'Magpies are among the few animals that can recognize themselves in a mirror.',
+  },
+  {
+    name: 'Badger',
+    scientificName: 'Meles meles',
+    rarityScore: 35,
+    rarityTier: 'Uncommon',
+    points: 35,
+    funFact: 'Badgers are surprisingly fast runners, reaching speeds of up to 48 km/h despite their short legs.',
+  },
+
+  // Rare (41-60 points)
+  {
+    name: 'Barn Owl',
+    scientificName: 'Tyto alba',
+    rarityScore: 52,
+    rarityTier: 'Rare',
+    points: 52,
+    funFact: 'Barn owls can hear a mouse moving under leaves from over 6 meters away.',
+  },
+  {
+    name: 'Kingfisher',
+    scientificName: 'Alcedo atthis',
+    rarityScore: 48,
+    rarityTier: 'Rare',
+    points: 48,
+    funFact: 'Kingfishers have special protective membranes that cover their eyes when diving into water.',
+  },
+  {
+    name: 'Red Squirrel',
+    scientificName: 'Sciurus vulgaris',
+    rarityScore: 45,
+    rarityTier: 'Rare',
+    points: 45,
+    funFact: 'Red squirrels can locate nuts buried up to 10 meters away using their sense of smell.',
+  },
+  {
+    name: 'European Polecat',
+    scientificName: 'Mustela putorius',
+    rarityScore: 55,
+    rarityTier: 'Rare',
+    points: 55,
+    funFact: 'Polecats release a foul-smelling musk as a defense mechanism, even more pungent than skunks.',
+  },
+
+  // Epic (61-80 points)
+  {
+    name: 'Snow Leopard',
+    scientificName: 'Panthera uncia',
+    rarityScore: 75,
+    rarityTier: 'Epic',
+    points: 75,
+    funFact: 'Snow leopards can leap up to 15 meters horizontally, six times the length of their body.',
+  },
+  {
+    name: 'Pangolin',
+    scientificName: 'Manis pentadactyla',
+    rarityScore: 78,
+    rarityTier: 'Epic',
+    points: 78,
+    funFact: 'Pangolins are the most trafficked animals in the world but are also incredibly well-armored.',
+  },
+  {
+    name: 'Axolotl',
+    scientificName: 'Ambystoma mexicanum',
+    rarityScore: 72,
+    rarityTier: 'Epic',
+    points: 72,
+    funFact: 'Axolotls can regenerate lost limbs, eyes, and even parts of their brain throughout their lives.',
+  },
+  {
+    name: 'Mandarin Duck',
+    scientificName: 'Aix galericulata',
+    rarityScore: 68,
+    rarityTier: 'Epic',
+    points: 68,
+    funFact: 'Mandarin ducks are considered one of the most beautiful duck species with intricate color patterns.',
+  },
+
+  // Legendary (81-100 points)
+  {
+    name: 'Amur Leopard',
+    scientificName: 'Panthera pardus orientalis',
+    rarityScore: 95,
+    rarityTier: 'Legendary',
+    points: 95,
+    funFact: 'Amur leopards are one of the rarest big cats, with fewer than 100 individuals left in the wild.',
+  },
+  {
+    name: 'Vaquita',
+    scientificName: 'Phocoena sinus',
+    rarityScore: 98,
+    rarityTier: 'Legendary',
+    points: 98,
+    funFact: 'The vaquita is the smallest cetacean in the world and the most critically endangered marine mammal.',
+  },
+  {
+    name: 'Kakapo',
+    scientificName: 'Strigops habroptilus',
+    rarityScore: 92,
+    rarityTier: 'Legendary',
+    points: 92,
+    funFact: 'Kakapos are one of the few flightless parrots and can live over 40 years in the wild.',
+  },
+];
+
+export const getRandomMockAnimal = () => {
+  const randomIndex = Math.floor(Math.random() * mockAnimals.length);
+  return mockAnimals[randomIndex];
+};
