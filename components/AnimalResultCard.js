@@ -46,6 +46,7 @@ export default function AnimalResultCard({ animal, onDismiss }) {
       exiting={FadeOutDown}
       style={[styles.card, { borderColor: tierColor, shadowColor: tierGlow }, animatedStyle]}
     >
+      <View style={[styles.rarityStripe, { backgroundColor: tierColor }]} />
       <View style={styles.headerRow}>
         <View>
           <Text style={styles.title}>{animal.name}</Text>
@@ -88,6 +89,7 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.surface,
     borderRadius: 32,
     padding: 24,
+    paddingTop: 30,
     marginBottom: 24,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 24 },
@@ -95,6 +97,13 @@ const styles = StyleSheet.create({
     shadowRadius: 32,
     elevation: 14,
     overflow: 'hidden',
+  },
+  rarityStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
   },
   errorCard: {
     borderColor: '#EF4444',

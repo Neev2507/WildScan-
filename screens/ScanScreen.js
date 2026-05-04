@@ -17,6 +17,7 @@ import Animated, {
   Easing,
   useSharedValue,
   useAnimatedStyle,
+  interpolate,
 } from 'react-native-reanimated';
 
 import ScreenContainer from '../components/ScreenContainer';
@@ -27,36 +28,61 @@ import { THEME } from '../utils/constants';
 
 function ScanPulseButton({ onPress, disabled }) {
   const pulse = useSharedValue(1);
+  const spin = useSharedValue(0);
+  const sonar = useSharedValue(0);
 
   useEffect(() => {
     pulse.value = withRepeat(
-      withTiming(1.08, {
-        duration: 1300,
-        easing: Easing.inOut(Easing.ease),
-      }),
+      withTiming(1.06, { duration: 1400, easing: Easing.inOut(Easing.ease) }),
       -1,
       true
     );
-  }, [pulse]);
+    spin.value = withRepeat(
+      withTiming(360, { duration: 12000, easing: Easing.linear }),
+      -1,
+      false
+    );
+    sonar.value = withRepeat(
+      withTiming(1, { duration: 2600, easing: Easing.out(Easing.ease) }),
+      -1,
+      false
+    );
+  }, [pulse, spin, sonar]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
-    shadowColor: THEME.primary,
-    shadowOpacity: 0.45,
-    shadowRadius: 24,
+  }));
+
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${spin.value}deg` }],
+  }));
+
+  const sonarStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: interpolate(sonar.value, [0, 1], [0.75, 1.32]) }],
+    opacity: interpolate(sonar.value, [0, 0.1, 0.75, 1], [0, 0.55, 0.2, 0]),
   }));
 
   return (
-    <Animated.View style={[styles.scanActionWrapper, animatedStyle]}>
-      <TouchableOpacity
-        activeOpacity={0.85}
-        style={[styles.scanButton, disabled && styles.scanButtonDisabled]}
-        onPress={onPress}
-        disabled={disabled}
-      >
-        <View style={styles.scanInner} />
-      </TouchableOpacity>
-    </Animated.View>
+    <View style={styles.scanButtonContainer}>
+      <Animated.View style={[styles.sonarRing, sonarStyle]} />
+      <View style={[styles.bracket, styles.bracketTL]} />
+      <View style={[styles.bracket, styles.bracketTR]} />
+      <View style={[styles.bracket, styles.bracketBL]} />
+      <View style={[styles.bracket, styles.bracketBR]} />
+      <Animated.View style={[styles.scanActionWrapper, pulseStyle]}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={[styles.scanButton, disabled && styles.scanButtonDisabled]}
+          onPress={onPress}
+          disabled={disabled}
+        >
+          <Animated.View style={[styles.rotatingRing, spinStyle]} />
+          <View style={styles.scanInner}>
+            <View style={styles.scanCore} />
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
   );
 }
 
@@ -228,7 +254,7 @@ export default function ScanScreen() {
 
 const styles = StyleSheet.create({
   pageContent: {
-    paddingBottom: 28,
+    paddingBottom: 100,
   },
   statusText: {
     color: THEME.text,
@@ -329,29 +355,99 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  scanActionWrapper: {
-    borderRadius: 999,
-  },
-  scanButton: {
+  scanButtonContainer: {
     width: 210,
     height: 210,
-    borderRadius: 105,
-    backgroundColor: '#07101F',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sonarRing: {
+    position: 'absolute',
+    width: 196,
+    height: 196,
+    borderRadius: 98,
+    borderWidth: 1.5,
+    borderColor: THEME.primary,
+  },
+  bracket: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderColor: 'rgba(0, 255, 136, 0.7)',
+  },
+  bracketTL: {
+    top: 6,
+    left: 6,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+  },
+  bracketTR: {
+    top: 6,
+    right: 6,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+  },
+  bracketBL: {
+    bottom: 6,
+    left: 6,
+    borderBottomWidth: 2,
+    borderLeftWidth: 2,
+  },
+  bracketBR: {
+    bottom: 6,
+    right: 6,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+  },
+  scanActionWrapper: {
+    borderRadius: 999,
+    shadowColor: THEME.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  scanButton: {
+    width: 178,
+    height: 178,
+    borderRadius: 89,
+    backgroundColor: '#060E1C',
     borderWidth: 2,
-    borderColor: 'rgba(0,255,136,0.35)',
+    borderColor: 'rgba(0,255,136,0.45)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   scanButtonDisabled: {
-    opacity: 0.65,
+    opacity: 0.6,
+  },
+  rotatingRing: {
+    position: 'absolute',
+    width: 142,
+    height: 142,
+    borderRadius: 71,
+    borderWidth: 1,
+    borderColor: 'rgba(0,255,136,0.22)',
   },
   scanInner: {
-    width: 128,
-    height: 128,
-    borderRadius: 64,
-    backgroundColor: 'rgba(0,255,136,0.12)',
-    borderWidth: 2,
+    width: 98,
+    height: 98,
+    borderRadius: 49,
+    backgroundColor: 'rgba(0,255,136,0.09)',
+    borderWidth: 1.5,
     borderColor: THEME.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanCore: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: THEME.primary,
+    opacity: 0.9,
+    shadowColor: THEME.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 12,
   },
   scanHelperRow: {
     flexDirection: 'row',

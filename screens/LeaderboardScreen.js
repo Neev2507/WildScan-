@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ScreenContainer from '../components/ScreenContainer';
 import { getLeaderboard } from '../services/firebase';
 import { THEME } from '../utils/constants';
@@ -29,72 +29,73 @@ export default function LeaderboardScreen() {
 
   return (
     <ScreenContainer>
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.title}>Boards</Text>
-          <Text style={styles.subtitle}>Explore top-ranked animal hunters.</Text>
-        </View>
-        <View style={styles.walletCard}>
-          <Text style={styles.walletBalance}>800.000</Text>
-          <Text style={styles.walletLabel}>Credits</Text>
-        </View>
-      </View>
-
-      <View style={styles.filterRow}>
-        {['Pass Yards', 'Pitcher', 'Rush', 'Reception'].map((option) => (
-          <TouchableOpacity key={option} style={styles.filterChip} activeOpacity={0.85}>
-            <Text style={styles.filterText}>{option}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <View style={styles.podiumRow}>
-        <View style={[styles.podiumCard, styles.podiumSecond]}>
-          <Text style={styles.podiumLabel}>2</Text>
-          <Text style={styles.podiumName}>{topPlayers[1]?.displayName ?? 'Player 2'}</Text>
-          <Text style={styles.podiumScore}>{topPlayers[1]?.totalPoints ?? 0} pts</Text>
-        </View>
-        <View style={[styles.podiumCard, styles.podiumFirst]}>
-          <Text style={styles.podiumLabel}>1</Text>
-          <Text style={styles.podiumName}>{topPlayers[0]?.displayName ?? 'Champion'}</Text>
-          <Text style={styles.podiumScore}>{topPlayers[0]?.totalPoints ?? 0} pts</Text>
-        </View>
-        <View style={[styles.podiumCard, styles.podiumThird]}>
-          <Text style={styles.podiumLabel}>3</Text>
-          <Text style={styles.podiumName}>{topPlayers[2]?.displayName ?? 'Player 3'}</Text>
-          <Text style={styles.podiumScore}>{topPlayers[2]?.totalPoints ?? 0} pts</Text>
-        </View>
-      </View>
-
-      <View style={styles.summaryRow}>
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Your Bonuses</Text>
-          <Text style={styles.summarySubtitle}>2 stars · 38 potions</Text>
-        </View>
-        <View style={styles.summaryCardAlt}>
-          <Text style={styles.summaryTitle}>Tournament</Text>
-          <Text style={styles.summarySubtitle}>Start a new match</Text>
-        </View>
-      </View>
-
-      <FlatList
-        data={otherPlayers}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        renderItem={({ item, index }) => (
-          <View style={styles.listCard}>
-            <View style={styles.rankCircle}>
-              <Text style={styles.rankCircleText}>{index + 4}</Text>
-            </View>
-            <View style={styles.rankMeta}>
-              <Text style={styles.playerName}>{item.displayName || 'Guest'}</Text>
-              <Text style={styles.playerPoints}>{item.totalPoints ?? 0} pts</Text>
-            </View>
-            <Text style={styles.rankTag}>#{index + 4}</Text>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>Boards</Text>
+            <Text style={styles.subtitle}>Explore top-ranked animal hunters.</Text>
           </View>
+          <View style={styles.walletCard}>
+            <Text style={styles.walletBalance}>800.000</Text>
+            <Text style={styles.walletLabel}>Credits</Text>
+          </View>
+        </View>
+
+        <View style={styles.filterRow}>
+          {['Global', 'Weekly', 'Friends', 'Legendary'].map((option) => (
+            <TouchableOpacity key={option} style={styles.filterChip} activeOpacity={0.85}>
+              <Text style={styles.filterText}>{option}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={styles.podiumRow}>
+          <View style={[styles.podiumCard, styles.podiumSecond]}>
+            <Text style={styles.podiumLabel}>2</Text>
+            <Text style={styles.podiumName}>{topPlayers[1]?.displayName ?? 'Player 2'}</Text>
+            <Text style={styles.podiumScore}>{topPlayers[1]?.totalPoints ?? 0} pts</Text>
+          </View>
+          <View style={[styles.podiumCard, styles.podiumFirst]}>
+            <Text style={styles.podiumCrown}>👑</Text>
+            <Text style={styles.podiumLabel}>1</Text>
+            <Text style={styles.podiumName}>{topPlayers[0]?.displayName ?? 'Champion'}</Text>
+            <Text style={styles.podiumScore}>{topPlayers[0]?.totalPoints ?? 0} pts</Text>
+          </View>
+          <View style={[styles.podiumCard, styles.podiumThird]}>
+            <Text style={styles.podiumLabel}>3</Text>
+            <Text style={styles.podiumName}>{topPlayers[2]?.displayName ?? 'Player 3'}</Text>
+            <Text style={styles.podiumScore}>{topPlayers[2]?.totalPoints ?? 0} pts</Text>
+          </View>
+        </View>
+
+        <View style={styles.summaryRow}>
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>Your Bonuses</Text>
+            <Text style={styles.summarySubtitle}>2 stars · 38 potions</Text>
+          </View>
+          <View style={styles.summaryCardAlt}>
+            <Text style={styles.summaryTitle}>Tournament</Text>
+            <Text style={styles.summarySubtitle}>Start a new match</Text>
+          </View>
+        </View>
+
+        {otherPlayers.length === 0 ? (
+          <Text style={styles.emptyText}>No leaderboard entries yet.</Text>
+        ) : (
+          otherPlayers.map((item, index) => (
+            <View key={item.id} style={styles.listCard}>
+              <View style={styles.rankCircle}>
+                <Text style={styles.rankCircleText}>{index + 4}</Text>
+              </View>
+              <View style={styles.rankMeta}>
+                <Text style={styles.playerName}>{item.displayName || 'Guest'}</Text>
+                <Text style={styles.playerPoints}>{item.totalPoints ?? 0} pts</Text>
+              </View>
+              <Text style={styles.rankTag}>#{index + 4}</Text>
+            </View>
+          ))
         )}
-        ListEmptyComponent={<Text style={styles.emptyText}>No leaderboard entries yet.</Text>}
-      />
+      </ScrollView>
     </ScreenContainer>
   );
 }
@@ -177,6 +178,10 @@ const styles = StyleSheet.create({
   podiumThird: {
     transform: [{ translateY: 12 }],
   },
+  podiumCrown: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
   podiumLabel: {
     color: THEME.primary,
     fontSize: 20,
@@ -224,8 +229,8 @@ const styles = StyleSheet.create({
     color: THEME.mutedText,
     fontSize: 13,
   },
-  listContent: {
-    paddingBottom: 120,
+  scrollContent: {
+    paddingBottom: 100,
   },
   listCard: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-﻿import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+﻿import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ScreenContainer from '../components/ScreenContainer';
 import { useAuth } from '../hooks/useAuth';
 import { signOutUser } from '../services/firebase';
@@ -16,6 +16,7 @@ export default function ProfileScreen() {
 
   return (
     <ScreenContainer>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
       <Text style={styles.title}>Profile</Text>
       <View style={styles.headerCard}>
         <View style={styles.avatarRing}>
@@ -75,6 +76,7 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.signOutButton} onPress={signOutUser} activeOpacity={0.85}>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
+      </ScrollView>
     </ScreenContainer>
   );
 }
@@ -266,6 +268,9 @@ const styles = StyleSheet.create({
   emptyText: {
     color: THEME.mutedText,
     textAlign: 'center',
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   signOutButton: {
     backgroundColor: THEME.primary,
