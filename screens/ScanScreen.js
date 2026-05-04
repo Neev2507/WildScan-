@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,14 +9,56 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { CameraView } from 'expo-camera';
+import Animated, {
+  withRepeat,
+  withTiming,
+  Easing,
+  useSharedValue,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 
 import ScreenContainer from '../components/ScreenContainer';
 import AnimalResultCard from '../components/AnimalResultCard';
 import { getRandomMockAnimal } from '../utils/mockAnimalData';
 import usePermissions from '../hooks/usePermissions';
+import { THEME } from '../utils/constants';
+
+function ScanPulseButton({ onPress, disabled }) {
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    pulse.value = withRepeat(
+      withTiming(1.08, {
+        duration: 1300,
+        easing: Easing.inOut(Easing.ease),
+      }),
+      -1,
+      true
+    );
+  }, [pulse]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+    shadowColor: THEME.primary,
+    shadowOpacity: 0.45,
+    shadowRadius: 24,
+  }));
+
+  return (
+    <Animated.View style={[styles.scanActionWrapper, animatedStyle]}>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        style={[styles.scanButton, disabled && styles.scanButtonDisabled]}
+        onPress={onPress}
+        disabled={disabled}
+      >
+        <View style={styles.scanInner} />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
 export default function ScanScreen() {
   const { cameraPermission, mediaPermission } = usePermissions();
@@ -33,18 +75,12 @@ export default function ScanScreen() {
         throw new Error('Failed to get image data');
       }
 
-      // Simulate API call delay (2 seconds)
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Get random mock animal for testing
       const result = getRandomMockAnimal();
       setAnimalResult(result);
     } catch (error) {
       console.error('Error processing image:', error);
-      Alert.alert(
-        'Scan Error',
-        error.message || 'Failed to identify animal. Please try again.'
-      );
+      Alert.alert('Scan Error', error.message || 'Failed to identify animal. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -52,15 +88,9 @@ export default function ScanScreen() {
 
   const handleTakePhoto = async () => {
     if (!cameraRef.current) return;
-
     try {
       setIsLoading(true);
-
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
-        base64: true,
-      });
-
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8, base64: true });
       await processImageBase64(photo.base64);
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -79,7 +109,6 @@ export default function ScanScreen() {
       });
 
       if (result.canceled) return;
-
       if (!result.assets || !result.assets[0]) {
         throw new Error('No image selected');
       }
@@ -87,7 +116,6 @@ export default function ScanScreen() {
       const asset = result.assets[0];
       let base64Data = asset.base64;
 
-      // On web, expo-image-picker may not return base64, so we need to fetch and convert
       if (!base64Data && asset.uri) {
         setIsLoading(true);
         setAnimalResult(null);
@@ -124,7 +152,7 @@ export default function ScanScreen() {
   if (cameraPermission === null || mediaPermission === null) {
     return (
       <ScreenContainer>
-        <Text>Requesting permissions...</Text>
+        <Text style={styles.statusText}>Requesting permissions...</Text>
       </ScreenContainer>
     );
   }
@@ -132,316 +160,253 @@ export default function ScanScreen() {
   if (cameraPermission === false && Platform.OS !== 'web') {
     return (
       <ScreenContainer>
-        <Text>Camera access is required to scan animals.</Text>
-      </ScreenContainer>
-    );
-  }
-
-  if (Platform.OS === 'web') {
-    return (
-      <ScreenContainer>
-        <ScrollView style={styles.webContainer} contentContainerStyle={styles.webContent}>
-          <View style={styles.webHeader}>
-            <Text style={styles.webTitle}>🔍 Wildlife Scanner</Text>
-            <Text style={styles.webSubtitle}>
-              Upload a photo of an animal to identify the species and earn points!
-            </Text>
-          </View>
-
-          <View style={styles.uploadSection}>
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#1a73e8" />
-                <Text style={styles.loadingText}>Identifying animal...</Text>
-              </View>
-            ) : (
-              <>
-                <View style={styles.uploadPlaceholder}>
-                  <Text style={styles.uploadIcon}>📸</Text>
-                  <Text style={styles.uploadText}>Select an image from your computer</Text>
-                </View>
-                <TouchableOpacity
-                  style={[styles.uploadButton, isLoading && styles.uploadButtonDisabled]}
-                  onPress={handleUploadImage}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.uploadButtonText}>Choose Image</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-
-          {animalResult && (
-            <AnimalResultCard animal={animalResult} onDismiss={handleRetry} />
-          )}
-        </ScrollView>
+        <Text style={styles.statusText}>Camera access is required to scan animals.</Text>
       </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <CameraView style={styles.camera} ref={cameraRef}>
-        <View style={styles.cameraOverlay}>
-          <View style={styles.topBar}>
-            <Text style={styles.cameraTitle}>Point at an animal</Text>
+    <ScreenContainer>
+      <ScrollView contentContainerStyle={styles.pageContent}>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>Scan Deck</Text>
+          <View style={styles.statusPill}>
+            <Text style={styles.statusPillText}>Ranked</Text>
+          </View>
+        </View>
+
+        <View style={styles.filterRow}>
+          {['All', 'Wild', 'Legends', 'Epic'].map((item) => (
+            <View key={item} style={[styles.filterChip, item === 'All' && styles.filterChipActive]}>
+              <Text style={[styles.filterText, item === 'All' && styles.filterTextActive]}>{item}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.scanCard}>
+          <View style={styles.scanCardHeader}>
+            <Text style={styles.scanCardLabel}>Scan mission</Text>
+            <Text style={styles.scanCardMetric}>+47 pts</Text>
+          </View>
+          <Text style={styles.scanCardTitle}>Identify the next rare creature.</Text>
+          <Text style={styles.scanCardDescription}>Use your camera or upload a found image to reveal rewards, stats, and rarity tiers.</Text>
+
+          <View style={styles.scanButtonWrapper}>
+            <ScanPulseButton onPress={handleTakePhoto} disabled={isLoading} />
           </View>
 
-          <View style={styles.centerContent}>
-            <View style={styles.scanFrame} />
-            <Text style={styles.scanHint}>Keep the animal in the frame</Text>
-          </View>
-
-          <View style={styles.bottomBar}>
-            <TouchableOpacity
-              style={[styles.shutterButton, isLoading && styles.shutterButtonDisabled]}
-              onPress={handleTakePhoto}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="large" color="#ffffff" />
-              ) : (
-                <View style={styles.shutterInner} />
-              )}
+          <View style={styles.scanHelperRow}>
+            <Text style={styles.scanHelperText}>{isLoading ? 'Scanning the wild...' : 'Tap the core to start.'}</Text>
+            <TouchableOpacity style={styles.smallAction} onPress={handleUploadImage} activeOpacity={0.85}>
+              <Text style={styles.smallActionText}>Upload photo</Text>
             </TouchableOpacity>
-            <Text style={styles.shutterHint}>
-              {isLoading ? 'Scanning...' : 'Press to scan'}
-            </Text>
           </View>
         </View>
-      </CameraView>
 
-      {animalResult && (
-        <View style={styles.resultOverlay}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={handleRetry}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.closeButtonText}>✕</Text>
-          </TouchableOpacity>
-          <ScrollView style={styles.resultContainer}>
-            <AnimalResultCard animal={animalResult} onDismiss={handleRetry} />
-          </ScrollView>
-        </View>
-      )}
-    </View>
+        {!animalResult && (
+          <View style={styles.infoGrid}>
+            <View style={styles.infoPanel}>
+              <Text style={styles.infoLabel}>Power</Text>
+              <Text style={styles.infoValue}>+65%</Text>
+            </View>
+            <View style={styles.infoPanel}>
+              <Text style={styles.infoLabel}>Coverage</Text>
+              <Text style={styles.infoValue}>3 regions</Text>
+            </View>
+            <View style={styles.infoPanelWide}>
+              <Text style={styles.infoLabel}>Last scan</Text>
+              <Text style={styles.infoValue}>Minutes ago</Text>
+            </View>
+          </View>
+        )}
+
+        {animalResult && <AnimalResultCard animal={animalResult} onDismiss={handleRetry} />}
+      </ScrollView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
+  pageContent: {
+    paddingBottom: 28,
   },
-  webContainer: {
-    padding: 20,
+  statusText: {
+    color: THEME.text,
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 24,
   },
-  camera: {
-    flex: 1,
-  },
-  cameraOverlay: {
-    flex: 1,
+  headerRow: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    marginBottom: 18,
   },
-  topBar: {
-    paddingTop: 16,
-    alignItems: 'center',
-  },
-  cameraTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  centerContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scanFrame: {
-    width: 250,
-    height: 250,
-    borderWidth: 3,
-    borderColor: '#3b82f6',
-    borderRadius: 20,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-  },
-  scanHint: {
-    color: '#e5e7eb',
-    fontSize: 14,
-    marginTop: 16,
-    fontWeight: '500',
-  },
-  bottomBar: {
-    paddingBottom: 24,
-    alignItems: 'center',
-  },
-  shutterButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  shutterButtonDisabled: {
-    opacity: 0.6,
-  },
-  shutterInner: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#1a73e8',
-  },
-  shutterHint: {
-    color: '#e5e7eb',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  resultOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  resultContainer: {
-    maxHeight: '80%',
-    width: '100%',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  closeButtonText: {
-    fontSize: 24,
-    color: '#111827',
-    fontWeight: '700',
-  },
-  webContainer: {
-    flex: 1,
-  },
-  webContent: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-  },
-  webHeader: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  webTitle: {
+  headerTitle: {
+    color: THEME.text,
     fontSize: 32,
+    fontWeight: '900',
+  },
+  statusPill: {
+    backgroundColor: 'rgba(0,255,136,0.14)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+  },
+  statusPillText: {
+    color: THEME.primary,
     fontWeight: '800',
-    marginBottom: 12,
-    color: '#111827',
+    fontSize: 12,
   },
-  webSubtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-    textAlign: 'center',
-    maxWidth: 400,
-    lineHeight: 24,
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 18,
   },
-  uploadSection: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  uploadPlaceholder: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    marginBottom: 24,
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
-    borderStyle: 'dashed',
-  },
-  uploadIcon: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  uploadText: {
-    fontSize: 16,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  uploadButton: {
-    backgroundColor: '#1a73e8',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  uploadButtonDisabled: {
-    opacity: 0.6,
-  },
-  uploadButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 48,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#1a73e8',
-    fontWeight: '600',
-    marginTop: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
+  filterChip: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    marginRight: 10,
     marginBottom: 10,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-    marginBottom: 24,
+  filterChipActive: {
+    backgroundColor: THEME.surfaceSoft,
+    borderColor: 'rgba(0,255,136,0.25)',
   },
-  button: {
-    backgroundColor: '#1a73e8',
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
+  filterText: {
+    color: THEME.mutedText,
+    fontWeight: '800',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  filterTextActive: {
+    color: THEME.text,
+  },
+  scanCard: {
+    backgroundColor: THEME.surface,
+    borderRadius: 32,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 24 },
+    shadowOpacity: 0.28,
+    shadowRadius: 34,
+    marginBottom: 22,
+  },
+  scanCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  scanCardLabel: {
+    color: THEME.mutedText,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontWeight: '700',
+  },
+  scanCardMetric: {
+    color: THEME.primary,
+    fontWeight: '900',
+  },
+  scanCardTitle: {
+    color: THEME.text,
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: 10,
+  },
+  scanCardDescription: {
+    color: THEME.mutedText,
+    fontSize: 14,
+    lineHeight: 22,
+    marginBottom: 28,
+  },
+  scanButtonWrapper: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  scanActionWrapper: {
+    borderRadius: 999,
+  },
+  scanButton: {
+    width: 210,
+    height: 210,
+    borderRadius: 105,
+    backgroundColor: '#07101F',
+    borderWidth: 2,
+    borderColor: 'rgba(0,255,136,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scanButtonDisabled: {
+    opacity: 0.65,
+  },
+  scanInner: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: 'rgba(0,255,136,0.12)',
+    borderWidth: 2,
+    borderColor: THEME.primary,
+  },
+  scanHelperRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  scanHelperText: {
+    color: THEME.mutedText,
+    fontWeight: '700',
+  },
+  smallAction: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  smallActionText: {
+    color: THEME.primary,
+    fontWeight: '800',
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  infoPanel: {
+    width: '48%',
+    backgroundColor: THEME.surfaceStrong,
+    borderRadius: 24,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    marginBottom: 14,
+  },
+  infoPanelWide: {
+    width: '100%',
+    backgroundColor: THEME.surfaceStrong,
+    borderRadius: 24,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  infoLabel: {
+    color: THEME.mutedText,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
+    fontWeight: '700',
+  },
+  infoValue: {
+    color: THEME.text,
+    fontSize: 20,
+    fontWeight: '900',
   },
 });

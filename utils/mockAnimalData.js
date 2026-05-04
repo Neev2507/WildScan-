@@ -1,8 +1,8 @@
-// Mock animal data for testing and development
+﻿// Mock animal data for testing and development
 export const mockAnimals = [
-  // Common (10-20 points)
   {
     name: 'House Sparrow',
+    icon: '🐦',
     scientificName: 'Passer domesticus',
     rarityScore: 15,
     rarityTier: 'Common',
@@ -11,6 +11,7 @@ export const mockAnimals = [
   },
   {
     name: 'Pigeon',
+    icon: '🕊️',
     scientificName: 'Columba livia',
     rarityScore: 12,
     rarityTier: 'Common',
@@ -19,6 +20,7 @@ export const mockAnimals = [
   },
   {
     name: 'Common Frog',
+    icon: '🐸',
     scientificName: 'Rana temporaria',
     rarityScore: 18,
     rarityTier: 'Common',
@@ -27,16 +29,16 @@ export const mockAnimals = [
   },
   {
     name: 'European Rabbit',
+    icon: '🐇',
     scientificName: 'Oryctolagus cuniculus',
     rarityScore: 16,
     rarityTier: 'Common',
     points: 16,
     funFact: 'Rabbits can jump up to 3 meters high and can see nearly 360 degrees around them.',
   },
-
-  // Uncommon (21-40 points)
   {
     name: 'Red Fox',
+    icon: '🦊',
     scientificName: 'Vulpes vulpes',
     rarityScore: 32,
     rarityTier: 'Uncommon',
@@ -45,6 +47,7 @@ export const mockAnimals = [
   },
   {
     name: 'Hedgehog',
+    icon: '🦔',
     scientificName: 'Erinaceus europaeus',
     rarityScore: 28,
     rarityTier: 'Uncommon',
@@ -53,6 +56,7 @@ export const mockAnimals = [
   },
   {
     name: 'Magpie',
+    icon: '🪶',
     scientificName: 'Pica pica',
     rarityScore: 25,
     rarityTier: 'Uncommon',
@@ -61,16 +65,16 @@ export const mockAnimals = [
   },
   {
     name: 'Badger',
+    icon: '🦡',
     scientificName: 'Meles meles',
     rarityScore: 35,
     rarityTier: 'Uncommon',
     points: 35,
     funFact: 'Badgers are surprisingly fast runners, reaching speeds of up to 48 km/h despite their short legs.',
   },
-
-  // Rare (41-60 points)
   {
     name: 'Barn Owl',
+    icon: '🦉',
     scientificName: 'Tyto alba',
     rarityScore: 52,
     rarityTier: 'Rare',
@@ -79,6 +83,7 @@ export const mockAnimals = [
   },
   {
     name: 'Kingfisher',
+    icon: '🐦',
     scientificName: 'Alcedo atthis',
     rarityScore: 48,
     rarityTier: 'Rare',
@@ -87,6 +92,7 @@ export const mockAnimals = [
   },
   {
     name: 'Red Squirrel',
+    icon: '🐿️',
     scientificName: 'Sciurus vulgaris',
     rarityScore: 45,
     rarityTier: 'Rare',
@@ -95,16 +101,16 @@ export const mockAnimals = [
   },
   {
     name: 'European Polecat',
+    icon: '🦨',
     scientificName: 'Mustela putorius',
     rarityScore: 55,
     rarityTier: 'Rare',
     points: 55,
     funFact: 'Polecats release a foul-smelling musk as a defense mechanism, even more pungent than skunks.',
   },
-
-  // Epic (61-80 points)
   {
     name: 'Snow Leopard',
+    icon: '🐆',
     scientificName: 'Panthera uncia',
     rarityScore: 75,
     rarityTier: 'Epic',
@@ -113,6 +119,7 @@ export const mockAnimals = [
   },
   {
     name: 'Pangolin',
+    icon: '🦎',
     scientificName: 'Manis pentadactyla',
     rarityScore: 78,
     rarityTier: 'Epic',
@@ -121,6 +128,7 @@ export const mockAnimals = [
   },
   {
     name: 'Axolotl',
+    icon: '🦎',
     scientificName: 'Ambystoma mexicanum',
     rarityScore: 72,
     rarityTier: 'Epic',
@@ -129,16 +137,16 @@ export const mockAnimals = [
   },
   {
     name: 'Mandarin Duck',
+    icon: '🦆',
     scientificName: 'Aix galericulata',
     rarityScore: 68,
     rarityTier: 'Epic',
     points: 68,
     funFact: 'Mandarin ducks are considered one of the most beautiful duck species with intricate color patterns.',
   },
-
-  // Legendary (81-100 points)
   {
     name: 'Amur Leopard',
+    icon: '🐆',
     scientificName: 'Panthera pardus orientalis',
     rarityScore: 95,
     rarityTier: 'Legendary',
@@ -147,6 +155,7 @@ export const mockAnimals = [
   },
   {
     name: 'Vaquita',
+    icon: '🐬',
     scientificName: 'Phocoena sinus',
     rarityScore: 98,
     rarityTier: 'Legendary',
@@ -155,6 +164,7 @@ export const mockAnimals = [
   },
   {
     name: 'Kakapo',
+    icon: '🦜',
     scientificName: 'Strigops habroptilus',
     rarityScore: 92,
     rarityTier: 'Legendary',

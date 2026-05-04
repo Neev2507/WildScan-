@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
   FadeInUp,
@@ -7,30 +7,15 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
 } from 'react-native-reanimated';
-
-const rarityColors = {
-  Common: '#6b7280',
-  Uncommon: '#10b981',
-  Rare: '#3b82f6',
-  Epic: '#8b5cf6',
-  Legendary: '#f59e0b',
-};
-
-const rarityBgColors = {
-  Common: '#f3f4f6',
-  Uncommon: '#ecfdf5',
-  Rare: '#eff6ff',
-  Epic: '#f5f3ff',
-  Legendary: '#fffbeb',
-};
+import { RARITY_COLORS, RARITY_GLOW, THEME } from '../utils/constants';
 
 export default function AnimalResultCard({ animal, onDismiss }) {
-  const scale = useSharedValue(0.8);
+  const scale = useSharedValue(0.9);
   const opacity = useSharedValue(0);
 
   useEffect(() => {
-    scale.value = withSpring(1, { damping: 10, mass: 1, overshootClamping: false });
-    opacity.value = withSpring(1, { damping: 10, mass: 1 });
+    scale.value = withSpring(1, { damping: 11, mass: 1 });
+    opacity.value = withSpring(1, { damping: 11, mass: 1 });
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -51,44 +36,48 @@ export default function AnimalResultCard({ animal, onDismiss }) {
     );
   }
 
-  const tierColor = rarityColors[animal.rarityTier] || '#6b7280';
-  const tierBgColor = rarityBgColors[animal.rarityTier] || '#f3f4f6';
+  const tierColor = RARITY_COLORS[animal.rarityTier] || RARITY_COLORS.Common;
+  const tierGlow = RARITY_GLOW[animal.rarityTier] || RARITY_GLOW.Common;
+  const animalIcon = animal.icon || '🐾';
 
   return (
     <Animated.View
       entering={FadeInUp.springify().damping(12)}
       exiting={FadeOutDown}
-      style={[styles.card, animatedStyle]}
+      style={[styles.card, { borderColor: tierColor, shadowColor: tierGlow }, animatedStyle]}
     >
-      {/* Animal Name */}
-      <Text style={styles.animalName}>{animal.name}</Text>
-      <Text style={styles.scientificName}>{animal.scientificName}</Text>
-
-      {/* Rarity Tier Badge */}
-      <View style={[styles.rarityBadge, { backgroundColor: tierBgColor }]}>
-        <Text style={[styles.rarityText, { color: tierColor }]}>
-          {animal.rarityTier} • {animal.rarityScore}/100
-        </Text>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.title}>{animal.name}</Text>
+          <Text style={styles.subtitle}>{animal.scientificName}</Text>
+        </View>
+        <View style={[styles.rarityBadge, { backgroundColor: tierGlow }]}> 
+          <Text style={[styles.rarityText, { color: tierColor }]}>{animal.rarityTier}</Text>
+        </View>
       </View>
 
-      {/* Points Earned */}
-      <View style={styles.pointsContainer}>
-        <Text style={styles.pointsLabel}>Points Earned</Text>
-        <Text style={styles.pointsValue}>+{animal.points}</Text>
+      <View style={[styles.artBackdrop, { backgroundColor: tierGlow }]}> 
+        <Text style={styles.artEmoji}>{animalIcon}</Text>
       </View>
 
-      {/* Fun Fact */}
+      <View style={styles.bottomRow}>
+        <View style={styles.valueBlock}>
+          <Text style={styles.valueLabel}>Score</Text>
+          <Text style={[styles.valueText, { color: tierColor }]}>{animal.rarityScore}</Text>
+        </View>
+        <View style={styles.valueBlock}> 
+          <Text style={styles.valueLabel}>Points</Text>
+          <Text style={[styles.valueText, { color: THEME.primary }]}>+{animal.points}</Text>
+        </View>
+      </View>
+
       <View style={styles.factContainer}>
-        <Text style={styles.factLabel}>🎓 Fun Fact</Text>
+        <Text style={styles.factHeader}>Trait</Text>
         <Text style={styles.factText}>{animal.funFact}</Text>
       </View>
 
-      {/* Divider */}
-      <View style={styles.divider} />
-
-      {/* Scan Again Button */}
-      <TouchableOpacity style={styles.scanAgainButton} onPress={onDismiss}>
-        <Text style={styles.scanAgainButtonText}>Scan Another Animal</Text>
+      <TouchableOpacity style={styles.scanAgainButton} onPress={onDismiss} activeOpacity={0.85}>
+        <Text style={styles.scanAgainButtonText}>Scan Another</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -96,115 +85,134 @@ export default function AnimalResultCard({ animal, onDismiss }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: THEME.surface,
+    borderRadius: 32,
     padding: 24,
-    marginHorizontal: 16,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 24 },
+    shadowOpacity: 0.24,
+    shadowRadius: 32,
+    elevation: 14,
+    overflow: 'hidden',
   },
   errorCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#ef4444',
+    borderColor: '#EF4444',
   },
-  animalName: {
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+  },
+  title: {
+    color: THEME.text,
     fontSize: 28,
-    fontWeight: '800',
-    marginBottom: 4,
-    color: '#111827',
+    fontWeight: '900',
+    marginBottom: 8,
   },
-  scientificName: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontStyle: 'italic',
-    marginBottom: 16,
+  subtitle: {
+    color: THEME.mutedText,
+    fontSize: 13,
   },
   rarityBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
   },
   rarityText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  pointsContainer: {
-    backgroundColor: '#f0f9ff',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#0ea5e9',
-  },
-  pointsLabel: {
     fontSize: 12,
-    color: '#0369a1',
-    fontWeight: '600',
-    marginBottom: 4,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
-  pointsValue: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#0ea5e9',
+  artBackdrop: {
+    width: '100%',
+    height: 220,
+    borderRadius: 28,
+    marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.24,
+    shadowRadius: 26,
+  },
+  artEmoji: {
+    fontSize: 92,
+    textShadowColor: 'rgba(0,0,0,0.24)',
+    textShadowOffset: { width: 0, height: 10 },
+    textShadowRadius: 22,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  valueBlock: {
+    flex: 1,
+    backgroundColor: '#0B1024',
+    borderRadius: 22,
+    padding: 16,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  valueLabel: {
+    color: THEME.mutedText,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
+    fontWeight: '700',
+  },
+  valueText: {
+    fontSize: 28,
+    fontWeight: '900',
   },
   factContainer: {
-    backgroundColor: '#fffbeb',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#f59e0b',
+    backgroundColor: '#0B1024',
+    borderRadius: 24,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    marginBottom: 22,
   },
-  factLabel: {
+  factHeader: {
+    color: THEME.mutedText,
     fontSize: 12,
-    color: '#92400e',
-    fontWeight: '600',
-    marginBottom: 6,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginBottom: 10,
+    textTransform: 'uppercase',
   },
   factText: {
-    fontSize: 13,
-    color: '#78350f',
-    lineHeight: 18,
+    color: THEME.text,
+    fontSize: 14,
+    lineHeight: 22,
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#e5e7eb',
-    marginVertical: 16,
+  scanAgainButton: {
+    backgroundColor: THEME.primary,
+    paddingVertical: 18,
+    borderRadius: 22,
+    alignItems: 'center',
+    shadowColor: THEME.primary,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.32,
+    shadowRadius: 20,
+  },
+  scanAgainButtonText: {
+    color: '#0D0D1A',
+    fontSize: 15,
+    fontWeight: '900',
   },
   errorText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#dc2626',
+    color: '#F87171',
     marginBottom: 8,
   },
   errorSubtext: {
     fontSize: 14,
-    color: '#7f1d1d',
-  },
-  hint: {
-    fontSize: 12,
-    color: '#9ca3af',
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  scanAgainButton: {
-    backgroundColor: '#1a73e8',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  scanAgainButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#FCA5A5',
   },
 });
