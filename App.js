@@ -7,6 +7,7 @@ import { Text, View } from 'react-native';
 
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import AuthScreen from './screens/AuthScreen';
+import UsernameScreen from './screens/UsernameScreen';
 import ScanScreen from './screens/ScanScreen';
 import LeaderboardScreen from './screens/LeaderboardScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -79,7 +80,7 @@ function AppNavigation() {
 }
 
 function AppContent() {
-  const { user, initializing } = useAuth();
+  const { user, initializing, needsUsername } = useAuth();
 
   if (initializing) {
     return (
@@ -91,7 +92,9 @@ function AppContent() {
     );
   }
 
-  return user ? <AppNavigation /> : <AuthScreen />;
+  if (!user) return <AuthScreen />;
+  if (needsUsername) return <UsernameScreen />;
+  return <AppNavigation />;
 }
 
 export default function App() {

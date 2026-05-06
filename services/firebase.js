@@ -13,12 +13,14 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   serverTimestamp,
   collection,
   query,
   orderBy,
   limit,
   getDocs,
+  increment,
 } from 'firebase/firestore';
 
 import { FIREBASE_CONFIG } from '../utils/firebaseConfig';
@@ -100,6 +102,20 @@ export const getUserDocument = async (uid) => {
 };
 
 export const signOutUser = async () => signOut(auth);
+
+export const updateUsername = async (uid, username) => {
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, { username });
+};
+
+export const awardPoints = async (uid, points) => {
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, {
+    totalPoints: increment(points),
+    animalsScanned: increment(1),
+    lastSeenAt: serverTimestamp(),
+  });
+};
 
 export const getLeaderboard = async () => {
   const leaderboardQuery = query(collection(db, 'users'), orderBy('totalPoints', 'desc'), limit(20));

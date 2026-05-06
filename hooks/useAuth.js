@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { subscribeAuthState, getUserDocument, createUserDocument } from '../services/firebase';
 
 const AuthContext = createContext(null);
@@ -7,12 +7,14 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [initializing, setInitializing] = useState(true);
+  const [needsUsername, setNeedsUsername] = useState(false);
 
   useEffect(() => {
     const unsubscribe = subscribeAuthState(async (firebaseUser) => {
       if (!firebaseUser) {
         setUser(null);
         setProfile(null);
+        setNeedsUsername(false);
         setInitializing(false);
         return;
       }
@@ -27,15 +29,18 @@ export function AuthProvider({ children }) {
           totalPoints: 0,
           animalsScanned: 0,
         });
-        setProfile({
+        const newProfile = {
           uid: firebaseUser.uid,
           displayName: firebaseUser.isAnonymous ? 'Guest' : firebaseUser.displayName || 'WildScan User',
           avatarURL: firebaseUser.photoURL ?? null,
           totalPoints: 0,
           animalsScanned: 0,
-        });
+        };
+        setProfile(newProfile);
+        setNeedsUsername(true);
       } else {
         setProfile(existingProfile);
+        setNeedsUsername(!existingProfile.username);
       }
 
       setInitializing(false);
@@ -44,8 +49,17 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    if (!user) return;
+    const updated = await getUserDocument(user.uid);
+    if (updated) {
+      setProfile(updated);
+      setNeedsUsername(!updated.username);
+    }
+  }, [user]);
+
   return (
-    <AuthContext.Provider value={{ user, profile, initializing }}>
+    <AuthContext.Provider value={{ user, profile, setProfile, initializing, needsUsername, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

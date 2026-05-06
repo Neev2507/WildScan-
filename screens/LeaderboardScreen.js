@@ -1,28 +1,26 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useState, useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import ScreenContainer from '../components/ScreenContainer';
 import { getLeaderboard } from '../services/firebase';
 import { THEME } from '../utils/constants';
 
+function displayName(player) {
+  return player.username || player.displayName || 'Hunter';
+}
+
 export default function LeaderboardScreen() {
   const [leaderboard, setLeaderboard] = useState([]);
-  const [scope, setScope] = useState('Global');
 
-  useEffect(() => {
-    let isMounted = true;
-
-    getLeaderboard()
-      .then((data) => {
-        if (isMounted) setLeaderboard(data);
-      })
-      .catch(() => {
-        if (isMounted) setLeaderboard([]);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      getLeaderboard()
+        .then((data) => { if (isMounted) setLeaderboard(data); })
+        .catch(() => { if (isMounted) setLeaderboard([]); });
+      return () => { isMounted = false; };
+    }, [])
+  );
 
   const topPlayers = leaderboard.slice(0, 3);
   const otherPlayers = leaderboard.slice(3);
@@ -52,18 +50,18 @@ export default function LeaderboardScreen() {
         <View style={styles.podiumRow}>
           <View style={[styles.podiumCard, styles.podiumSecond]}>
             <Text style={styles.podiumLabel}>2</Text>
-            <Text style={styles.podiumName}>{topPlayers[1]?.displayName ?? 'Player 2'}</Text>
+            <Text style={styles.podiumName}>{topPlayers[1] ? displayName(topPlayers[1]) : 'Player 2'}</Text>
             <Text style={styles.podiumScore}>{topPlayers[1]?.totalPoints ?? 0} pts</Text>
           </View>
           <View style={[styles.podiumCard, styles.podiumFirst]}>
             <Text style={styles.podiumCrown}>👑</Text>
             <Text style={styles.podiumLabel}>1</Text>
-            <Text style={styles.podiumName}>{topPlayers[0]?.displayName ?? 'Champion'}</Text>
+            <Text style={styles.podiumName}>{topPlayers[0] ? displayName(topPlayers[0]) : 'Champion'}</Text>
             <Text style={styles.podiumScore}>{topPlayers[0]?.totalPoints ?? 0} pts</Text>
           </View>
           <View style={[styles.podiumCard, styles.podiumThird]}>
             <Text style={styles.podiumLabel}>3</Text>
-            <Text style={styles.podiumName}>{topPlayers[2]?.displayName ?? 'Player 3'}</Text>
+            <Text style={styles.podiumName}>{topPlayers[2] ? displayName(topPlayers[2]) : 'Player 3'}</Text>
             <Text style={styles.podiumScore}>{topPlayers[2]?.totalPoints ?? 0} pts</Text>
           </View>
         </View>
@@ -88,7 +86,7 @@ export default function LeaderboardScreen() {
                 <Text style={styles.rankCircleText}>{index + 4}</Text>
               </View>
               <View style={styles.rankMeta}>
-                <Text style={styles.playerName}>{item.displayName || 'Guest'}</Text>
+                <Text style={styles.playerName}>{displayName(item)}</Text>
                 <Text style={styles.playerPoints}>{item.totalPoints ?? 0} pts</Text>
               </View>
               <Text style={styles.rankTag}>#{index + 4}</Text>

@@ -24,6 +24,8 @@ import ScreenContainer from '../components/ScreenContainer';
 import AnimalResultCard from '../components/AnimalResultCard';
 import { getRandomMockAnimal } from '../utils/mockAnimalData';
 import usePermissions from '../hooks/usePermissions';
+import { useAuth } from '../hooks/useAuth';
+import { awardPoints } from '../services/firebase';
 import { THEME } from '../utils/constants';
 
 function ScanPulseButton({ onPress, disabled }) {
@@ -87,6 +89,7 @@ function ScanPulseButton({ onPress, disabled }) {
 }
 
 export default function ScanScreen() {
+  const { user, setProfile } = useAuth();
   const { cameraPermission, mediaPermission } = usePermissions();
   const cameraRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -104,6 +107,15 @@ export default function ScanScreen() {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       const result = getRandomMockAnimal();
       setAnimalResult(result);
+
+      if (user && result.points) {
+        awardPoints(user.uid, result.points).catch(() => null);
+        setProfile((prev) =>
+          prev
+            ? { ...prev, totalPoints: (prev.totalPoints || 0) + result.points, animalsScanned: (prev.animalsScanned || 0) + 1 }
+            : prev
+        );
+      }
     } catch (error) {
       console.error('Error processing image:', error);
       Alert.alert('Scan Error', error.message || 'Failed to identify animal. Please try again.');
